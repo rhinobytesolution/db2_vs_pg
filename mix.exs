@@ -44,7 +44,9 @@ defmodule GenGame.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:libcluster, "~> 3.3"},
       {:confex, "~> 3.5"},
-      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:rustler, "~> 0.32.1"},
+      {:benchee, "~> 1.0", only: :dev}
     ]
   end
 
