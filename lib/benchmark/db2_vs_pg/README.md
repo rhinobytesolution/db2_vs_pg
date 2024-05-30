@@ -1,6 +1,8 @@
 # Benchmarks
 
-PG
+## How to run
+
+### Postgres
 
 ```bash
 # go to container
@@ -9,23 +11,37 @@ make console_gen_game
 mix run lib/benchmark/db2_vs_pg/benchmark_start.exs
 ```
 
-DB2
+### DB2
 
 ```bash
 [TODO]
 ```
 
-## Benchmark Detail
+# Benchmark Detail
 
-### Insert
+## Insert
 
-pg_insert_ops:
+### Postgres
 
 ```sql
 INSERT INTO accounts (username, inserted_at, updated_at) VALUES (gen_random_uuid(), '2024-05-29 12:26:15', '2024-05-29 12:26:15')
 ```
 
-db2_insert_ops:
+### DB2
+
+```sql
+# [TODO]
+```
+
+## Select
+
+### Postgres
+
+```sql
+# [TODO]
+```
+
+### DB2
 
 ```sql
 # [TODO]
@@ -33,11 +49,12 @@ db2_insert_ops:
 
 # Example results
 
-PG
+### Postgres
+
 
 ![pg](./docs/benchmark_pg.png)
 
-DB2
+### DB2
 
 [TODO]
 
