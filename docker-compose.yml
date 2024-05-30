@@ -16,8 +16,18 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+      - ./native/db2wrapper/db2dsdriver.cfg:/opt/ibm/cli/cfg/db2dsdriver.cfg
+      - ./native/db2wrapper/db2cli.ini:/opt/ibm/cli/cfg/db2cli.ini
     environment:
-      DATABASE_URL: ecto://postgres:postgres@postgres/gen_game_dev
+      DATABASE_URL: ecto://postgres:postgres@postgres:5432/gen_game_dev
+      PG_HOSTNAME: postgres
+      PG_PORT: 5432
+      PG_USERNAME: postgres
+      PG_PASSWORD: postgres
+      PG_DATABASE: gen_game_dev
+      DB2_USERNAME: db2vspg
+      DB2_PASSWORD: db2inst1
+      DB2_DATABASE: password
     ports:
       - 4000:4000
 

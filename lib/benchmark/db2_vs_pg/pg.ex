@@ -14,23 +14,13 @@ defmodule Benchmark.Db2VsPg.Pg do
   end
 
   def init() do
-    _url = "DATABASE_URL=ecto://postgres:postgres@localhost:5432/gen_game_dev"
-
-    url_chunk =
-      System.get_env("DATABASE_URL")
-      |> String.split(":")
-      |> Enum.map(fn v -> String.split(v, "@") end)
-      |> List.flatten()
-      |> Enum.map(fn v -> String.split(v, "/") end)
-      |> List.flatten()
-
     {:ok, conn} =
       Postgrex.start_link(
-        hostname: Enum.at(url_chunk, 5),
-        port: Enum.at(url_chunk, 6),
-        username: Enum.at(url_chunk, 3),
-        password: Enum.at(url_chunk, 4),
-        database: Enum.at(url_chunk, 7)
+        hostname: System.get_env("PG_HOSTNAME"),
+        port: System.get_env("PG_PORT"),
+        username: System.get_env("PG_USERNAME"),
+        password: System.get_env("PG_PASSWORD"),
+        database: System.get_env("PG_DATABASE")
       )
 
     truncate(conn)
