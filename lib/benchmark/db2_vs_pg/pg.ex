@@ -30,12 +30,11 @@ defmodule Benchmark.Db2VsPg.Pg do
   end
 
   def setup() do
-    set_conn()
+    conn = set_conn()
 
-    %{conn: conn} = Agent.get(__MODULE__, & &1)
     migrate(conn)
     truncate(conn)
-    :ok
+    conn
   end
 
   def get_state() do
@@ -56,6 +55,14 @@ defmodule Benchmark.Db2VsPg.Pg do
     {:ok, %Postgrex.Result{command: :insert}} = Postgrex.query(conn, sql, [])
   end
 
+  def count(conn) do
+    {:ok, %Postgrex.Result{rows: rows}} = Postgrex.query(conn, "SELECT count(*) FROM players", [])
+
+    rows
+    |> List.first()
+    |> List.first()
+  end
+
   defp truncate(conn) do
     Postgrex.query(conn, "TRUNCATE players", [])
   end
@@ -71,6 +78,7 @@ defmodule Benchmark.Db2VsPg.Pg do
       )
 
     Agent.update(__MODULE__, &Map.put(&1, :conn, conn))
+    conn
   end
 
   defp migrate(conn) do

@@ -18,12 +18,15 @@ defmodule Benchmark.Db2VsPg.Db2 do
   end
 
   def setup() do
-    set_conn()
-    %{conn: conn} = Agent.get(__MODULE__, & &1)
+    conn = set_conn()
 
     migrate(conn)
     truncate(conn)
-    :ok
+    conn
+  end
+
+  def get_state() do
+    Agent.get(__MODULE__, & &1)
   end
 
   def select(conn) do
@@ -40,6 +43,13 @@ defmodule Benchmark.Db2VsPg.Db2 do
     :odbc.sql_query(conn, to_charlist(sql))
   end
 
+  def count(conn) do
+    {:selected, _, rows} =
+      :odbc.sql_query(conn, to_charlist("SELECT count(*) FROM PUBLIC.players"))
+
+    List.first(rows) |> Tuple.to_list() |> List.first()
+  end
+
   defp truncate(conn) do
     :odbc.sql_query(conn, to_charlist("truncate PUBLIC.PLAYERS IMMEDIATE"))
   end
@@ -49,6 +59,7 @@ defmodule Benchmark.Db2VsPg.Db2 do
     {:ok, conn} = :odbc.connect(conn_str, binary_strings: :on)
 
     Agent.update(__MODULE__, &Map.put(&1, :conn, conn))
+    conn
   end
 
   defp migrate(conn) do
