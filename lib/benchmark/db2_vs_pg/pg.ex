@@ -9,11 +9,58 @@ defmodule Benchmark.Db2VsPg.Pg do
   """
   use Agent
 
+  @setup_sql [
+    "drop table players",
+    ~s"
+    create table players
+    (
+        id       serial
+            constraint players_pk
+                primary key,
+        username varchar(128),
+        pos_x    int,
+        pos_y    int
+    )",
+    "create unique index players_id_uindex on players (id)",
+    "create unique index players_username_uindex on players (username)"
+  ]
+
   def start_link() do
     Agent.start_link(fn -> %{conn: nil, counter: 0} end, name: __MODULE__)
   end
 
-  def init() do
+  def setup() do
+    set_conn()
+
+    %{conn: conn} = Agent.get(__MODULE__, & &1)
+    migrate(conn)
+    truncate(conn)
+    :ok
+  end
+
+  def get_state() do
+    Agent.get(__MODULE__, & &1)
+  end
+
+  def select(conn) do
+    {:ok, %Postgrex.Result{}} = Postgrex.query(conn, "SELECT * FROM players LIMIT 1", [])
+  end
+
+  def insert(conn) do
+    %{counter: counter} = Agent.get(__MODULE__, & &1)
+    Agent.update(__MODULE__, &Map.put(&1, :counter, counter + 1))
+
+    sql =
+      "INSERT INTO players (username, pos_x, pos_y) VALUES ('#{counter}', '#{counter}', '#{counter}')"
+
+    {:ok, %Postgrex.Result{command: :insert}} = Postgrex.query(conn, sql, [])
+  end
+
+  defp truncate(conn) do
+    Postgrex.query(conn, "TRUNCATE players", [])
+  end
+
+  defp set_conn() do
     {:ok, conn} =
       Postgrex.start_link(
         hostname: System.get_env("PG_HOSTNAME"),
@@ -23,35 +70,10 @@ defmodule Benchmark.Db2VsPg.Pg do
         database: System.get_env("PG_DATABASE")
       )
 
-    truncate(conn)
-
     Agent.update(__MODULE__, &Map.put(&1, :conn, conn))
   end
 
-  def get_state() do
-    Agent.get(__MODULE__, & &1)
-  end
-
-  def select(conn) do
-    {:ok, %Postgrex.Result{}} = Postgrex.query(conn, "SELECT * FROM accounts LIMIT 1", [])
-  end
-
-  def insert(conn) do
-    %{counter: counter} = Agent.get(__MODULE__, & &1)
-    Agent.update(__MODULE__, &Map.put(&1, :counter, counter + 1))
-
-    {:ok,
-     %Postgrex.Result{
-       command: :insert
-     }} =
-      Postgrex.query(
-        conn,
-        "INSERT INTO accounts (username, inserted_at, updated_at) VALUES (gen_random_uuid(), '2024-05-29 12:26:15', '2024-05-29 12:26:15')",
-        []
-      )
-  end
-
-  defp truncate(conn) do
-    Postgrex.query(conn, "TRUNCATE accounts", [])
+  defp migrate(conn) do
+    Enum.each(@setup_sql, fn sql -> Postgrex.query(conn, sql, []) end)
   end
 end

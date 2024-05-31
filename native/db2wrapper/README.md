@@ -21,4 +21,5 @@ end
 
 ## Run
 
+cd /app/native/db2wrapper
 cargo run --bin hello

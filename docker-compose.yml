@@ -17,7 +17,8 @@ services:
     volumes:
       - .:/app
       - ./native/db2wrapper/db2dsdriver.cfg:/opt/ibm/cli/cfg/db2dsdriver.cfg
-      - ./native/db2wrapper/db2cli.ini:/opt/ibm/cli/cfg/db2cli.ini
+      - ./native/db2wrapper/odbcinst.ini:/etc/odbcinst.ini
+      - ./native/db2wrapper/odbc.ini:/etc/odbc.ini
     environment:
       DATABASE_URL: ecto://postgres:postgres@postgres:5432/gen_game_dev
       PG_HOSTNAME: postgres
@@ -25,9 +26,9 @@ services:
       PG_USERNAME: postgres
       PG_PASSWORD: postgres
       PG_DATABASE: gen_game_dev
-      DB2_USERNAME: db2vspg
-      DB2_PASSWORD: db2inst1
-      DB2_DATABASE: password
+      DB2_CONNECTION_STRING: Driver={IBM DB2 ODBC DRIVER};Database=db2vspg;Uid=db2inst1;Pwd=password;Protocol=SOCKETS;Hostname=db2;Port=50000
+      LD_LIBRARY_PATH: /opt/ibm/cli/lib64
+      IBM_DB_HOME: /opt/ibm/cli
     ports:
       - 4000:4000
 
@@ -49,9 +50,9 @@ services:
     privileged: true
     environment:
       - LICENSE=accept
-      - DB2INSTANCE=db2inst1 # Db2 instance name
-      - DB2INST1_PASSWORD=password # Set your desired password here
-      - DBNAME=db2vspg # Database name
+      - DB2INSTANCE=db2inst1
+      - DB2INST1_PASSWORD=password
+      - DBNAME=db2vspg
     volumes:
       - db2:/database
     ports:
