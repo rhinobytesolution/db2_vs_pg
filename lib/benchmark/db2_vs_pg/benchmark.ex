@@ -3,15 +3,18 @@ defmodule Benchmark.Db2VsPg.Benchmark do
   alias Benchmark.Db2VsPg.Db2
 
   def start_benchmark() do
-    benchmark_select()
     benchmark_insert()
+    benchmark_select()
   end
 
   defp benchmark_select() do
     Benchee.run(
       %{
-        "pg_select_ops" => fn {_input, {pg_conn, _db2_conn}} -> Pg.select(pg_conn) end,
-        "db2_select_ops" => fn {_input, {_pg_conn, db2_conn}} -> Db2.select(db2_conn) end
+        "pg_select" => fn {_input, {pg_conn, _db2_conn}} -> Pg.select(pg_conn) end,
+        "db2_select_with_erlang_odbc" => fn {_input, {_pg_conn, db2_conn}} ->
+          Db2.select(db2_conn)
+        end,
+        "db2_select_with_rust_nif" => fn _ -> Db2Wrapper.select() end
       },
       before_scenario: &before_scenario/1
     )
@@ -20,30 +23,11 @@ defmodule Benchmark.Db2VsPg.Benchmark do
   defp benchmark_insert() do
     Benchee.run(
       %{
-        "pg_insert_ops" => {
-          fn {_input, {pg_conn, _db2_conn}} -> Pg.insert(pg_conn) end,
-          after_scenario: fn {_input, {pg_conn, _db2_conn}} ->
-            pg2_count = Pg.count(pg_conn)
-
-            IO.puts("count rows pg: #{pg2_count}")
-          end
-        },
-        "pg_insert_ops" => {
-          fn {_input, {pg_conn, _db2_conn}} -> Pg.insert(pg_conn) end
-          # after_scenario: fn {_input, {pg_conn, _db2_conn}} ->
-          #   pg2_count = Pg.count(pg_conn)
-
-          #   IO.puts("count rows pg: #{pg2_count}")
-          # end
-        },
-        "db2_insert_ops" => {
-          fn {_input, {_pg_conn, db2_conn}} -> Db2.insert(db2_conn) end
-          # after_scenario: fn {_input, {_pg_conn, db2_conn}} ->
-          #   db2_count = Db2.count(db2_conn)
-
-          #   IO.puts("count rows db2: #{db2_count}")
-          # end
-        }
+        "pg_insert" => fn {_input, {pg_conn, _db2_conn}} -> Pg.insert(pg_conn) end,
+        "db2_insert_with_erlang_odbc" => fn {_input, {_pg_conn, db2_conn}} ->
+          Db2.insert(db2_conn)
+        end,
+        "db2_insert_with_rust_nif" => fn _ -> Db2Wrapper.insert() end
       },
       before_scenario: &before_scenario/1
     )
