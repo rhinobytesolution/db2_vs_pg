@@ -13,5 +13,4 @@ console_gen_game:
 
 restart_app:
 	docker compose stop gen_game --timeout 0 &&\
-	docker compose up -d &&\
-	docker logs -f gen_game
+	docker compose up -d

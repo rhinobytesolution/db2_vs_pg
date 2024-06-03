@@ -1,3 +1,1 @@
-alias Benchmark.Db2VsPg.Benchmark
-
-Benchmark.start_benchmark()
+Benchmark.Db2VsPg.Benchmark.start_benchmark()

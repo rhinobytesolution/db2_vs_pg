@@ -9,8 +9,8 @@ defmodule Benchmark.Db2VsPg.Db2 do
         username varchar(128),
         pos_x    int,
         pos_y    int
-    )",
-    "create unique index PLAYERS_ID_UINDEX on PUBLIC.players (id)"
+    )"
+    # "create unique index PLAYERS_ID_UINDEX on PUBLIC.players (id)"
   ]
 
   def start_link() do

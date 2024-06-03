@@ -19,7 +19,9 @@ defmodule GenGame.Application do
       GenGameWeb.Presence,
       Endpoint,
       PlayerSession,
-      Gameplay
+      Gameplay,
+      {PartitionSupervisor,
+       child_spec: DynamicSupervisor, name: GenGame.Benchmark.DynamicSupervisor}
     ]
 
     opts = [strategy: :one_for_one, name: GenGame.Supervisor]

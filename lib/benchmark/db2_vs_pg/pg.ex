@@ -21,8 +21,8 @@ defmodule Benchmark.Db2VsPg.Pg do
         pos_x    int,
         pos_y    int
     )",
-    "create unique index players_id_uindex on players (id)",
-    "create unique index players_username_uindex on players (username)"
+    "create unique index players_id_uindex on players (id)"
+    # "create unique index players_username_uindex on players (username)"
   ]
 
   def start_link() do
@@ -63,12 +63,8 @@ defmodule Benchmark.Db2VsPg.Pg do
     |> List.first()
   end
 
-  defp truncate(conn) do
-    Postgrex.query(conn, "TRUNCATE players", [])
-  end
-
-  defp set_conn() do
-    {:ok, conn} =
+  def create_conn() do
+    {:ok, _conn} =
       Postgrex.start_link(
         hostname: System.get_env("PG_HOSTNAME"),
         port: System.get_env("PG_PORT"),
@@ -76,7 +72,14 @@ defmodule Benchmark.Db2VsPg.Pg do
         password: System.get_env("PG_PASSWORD"),
         database: System.get_env("PG_DATABASE")
       )
+  end
 
+  defp truncate(conn) do
+    Postgrex.query(conn, "TRUNCATE players", [])
+  end
+
+  defp set_conn() do
+    {:ok, conn} = create_conn()
     Agent.update(__MODULE__, &Map.put(&1, :conn, conn))
     conn
   end
