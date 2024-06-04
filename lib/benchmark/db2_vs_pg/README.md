@@ -33,11 +33,26 @@ db2wrapper::db2::select()           290
 
 db2wrapper::db2::select() was called 290 times in one second.
 
-[TODO]
+# Conclusion
 
-## Additional notes
+We did benchmark postgres driver and db2 driver.
 
+Here are the scenarios for insert operations:
+1. scenario 1 [pg_insert]: create row in postgres via postgrex library
+2. scenario 2 [db2_insert_with_erlang_odbc]: create row in db2 via odbc app in erlang/otp
+3. scenario 3 [db2_insert_with_rust_nif]: create row in db2 via db2 driver written in rust, called from elixir using NIF
+4. scenario 4 [db2wrapper::db2::insert()]: create row in db2 via db2 driver written in rust directly
 
-benchmark pg default
+From the benchmark the order from fastest to slowest are scenario 1, then scenario 2, scenario 3 then scenario 4.
 
-PGPASSWORD=postgres pgbench -U postgres -h localhost -p 5433 -i -s 100 example
+After some investigation, scenario 1 is fastest because postgrex is erlang application (https://www.erlang.org/docs/17/man/application), not just code so when we call it from particular process the instruction will run on another process which started by postgrex supervisor, and they also implements some advanced methods including pooling (see DBConnection.ConnectionPool), and cursor.
+
+Scenario 2, inserting db2 via `odbc` package. `odbc` is also erlang application, they use gen_tcp under the hood which is good. But the implementation is very simple.
+
+Scenario 3, inserting db2 via Rust with NIF. It is pretty slow, likely because there are too many steps: erlang app to rust to db2 driver. Also there is some overhead to (de)serialize data between erlang and rust, see "Foreign Function Interface" doc for more detail. This option will be dropped.
+
+Scenario 4, same as scenario 3.
+
+-----------
+
+As we know `odbc` app on scenario 2 implementation is very simple. I'm thinking that we can create new library based on `odbc` application. First, we learn how db2 client work in other language. After gaining a knowledge by reading db2 client codebase we can implement our own db2 driver with more confident. Then, this new library can head to head again with postgrex.
